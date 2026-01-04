@@ -1,32 +1,165 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>IDS</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <title>Canary IDS Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #020617;
+            --text: #e5e7eb;
+            --muted: #94a3b8;
+            --info: #38bdf8;
+            --alert: #ef4444;
+            --border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            color: #f87171;
+        }
+
+        header .controls a {
+            color: var(--muted);
+            text-decoration: none;
+            margin-left: 15px;
+            font-size: 0.9rem;
+        }
+
+        header .controls a:hover {
+            color: var(--text);
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .event {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-left: 6px solid var(--info);
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            border-radius: 6px;
+        }
+
+        .event.ALERT {
+            border-left-color: var(--alert);
+            box-shadow: 0 0 0 1px rgba(239,68,68,0.3);
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+
+        .severity {
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .severity.INFO {
+            background: rgba(56,189,248,0.15);
+            color: var(--info);
+        }
+
+        .severity.ALERT {
+            background: rgba(239,68,68,0.15);
+            color: var(--alert);
+        }
+
+        .timestamp {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .event-body {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #cbd5f5;
+        }
+
+        .event-body span {
+            color: var(--muted);
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--muted);
+            font-size: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="header">
-    <div class="title">IDS</div>
-    <img src="{{ url_for('static', filename='ids.png') }}" class="logo">
-</div>
+<header>
+    <h1>Canary IDS</h1>
+    <div class="controls">
+        <a href="/">Refresh</a>
+        <a href="/clear">Clear</a>
+    </div>
+</header>
 
-<div class="controls">
-    <a href="/" class="btn">Refresh</a>
-    <a href="/clear" class="btn danger">Clear</a>
-</div>
-
-<div class="content">
+<div class="container">
     {% if events %}
         {% for e in events|reverse %}
-            <div class="card {{ e.severity }}">
-                <pre>{{ e | tojson(indent=2) }}</pre>
+            <div class="event {{ e.severity }}">
+                <div class="event-header">
+                    <div class="severity {{ e.severity }}">{{ e.severity }}</div>
+                    <div class="timestamp">{{ e.time_stamp }}</div>
+                </div>
+                <div class="event-body">
+                    <div><span>Source:</span> {{ e.ipsrc }} : {{ e.srcport }}</div>
+                    <div><span>Destination:</span> {{ e.ipdst }} : {{ e.dstport }}</div>
+                    <div><span>Protocol:</span> {{ e.transport_layer }}</div>
+                    <div><span>Type:</span> {{ e.highest_layer }}</div>
+                </div>
             </div>
         {% endfor %}
     {% else %}
-        <p class="empty">No alerts yet.</p>
+        <div class="empty">No alerts detected.</div>
     {% endif %}
 </div>
+
+<footer>
+    Canary IDS · Local Network Monitoring
+</footer>
 
 </body>
 </html>
